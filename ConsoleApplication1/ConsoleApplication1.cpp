@@ -34,6 +34,7 @@ void printLastError(const char* source) {
 
 int main()
 {
+	//Computer\HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Enum\USB\VID_0E6F&PID_0213\06062CE6\Device Parameters
 	const char* symbolicName = "//?/USB#VID_046D&PID_C077#6&289c360f&0&3#{a5dcbf10-6530-11d2-901f-00c04fb951ed}";
 	void* fileHandle = CreateFileA(symbolicName, GENERIC_READ | GENERIC_WRITE, 0, 0, OPEN_EXISTING, FILE_FLAG_OVERLAPPED, 0);
 
