@@ -36,7 +36,8 @@ int main()
 {
 	//Computer\HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Enum\USB\VID_0E6F&PID_0213\06062CE6\Device Parameters
 	const char* symbolicName = "//?/USB#VID_046D&PID_C077#6&289c360f&0&3#{a5dcbf10-6530-11d2-901f-00c04fb951ed}";
-	void* fileHandle = CreateFileA(symbolicName, GENERIC_READ | GENERIC_WRITE, 0, 0, OPEN_EXISTING, FILE_FLAG_OVERLAPPED, 0);
+	const char* testName = "//./GLOBALROOT/Device/USBPDO-17";
+	void* fileHandle = CreateFileA(testName, GENERIC_READ | GENERIC_WRITE, 0, 0, OPEN_EXISTING, FILE_FLAG_OVERLAPPED, 0);
 
 	printLastError("test");
 	void* interfaceHandle;
@@ -49,7 +50,7 @@ int main()
 
 	unsigned char* buffer = (UCHAR*)malloc(5);
 	unsigned long transferredLength;
-	for (int i = 0; i < 10000; i++) {
+	for (int i = 0; i < 10; i++) {
 		WinUsb_ReadPipe(interfaceHandle, 0x81, buffer, 4, &transferredLength, 0);
 		printLastError("ReadPipe");
 		printf("value: %x", *(ULONG*)buffer);
