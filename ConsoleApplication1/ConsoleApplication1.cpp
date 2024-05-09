@@ -6,6 +6,8 @@
 #include <winusb.h>
 #include <iostream>
 #include <corecrt_malloc.h>
+#include <cfgmgr32.h>
+#include <combaseapi.h>
 
 void printLastError(const char* source) {
 
@@ -29,12 +31,11 @@ void printLastError(const char* source) {
 		default:
 			message = "something else";
 		}
-		printf("\n");
 		printf("Source: %s, Errors: %d, Message: %s\n", source, lastError, message);
 	}
 }
 
-int main()
+int readUsb()
 {
 	//Computer\HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Enum\USB\VID_0E6F&PID_0213\06062CE6\Device Parameters
 	const char* symbolicName = "//?/USB#VID_046D&PID_C077#6&289c360f&0&3#{a5dcbf10-6530-11d2-901f-00c04fb951ed}";
@@ -47,7 +48,7 @@ int main()
 	const char* thing1 = "//?/USB#VID_2E8A&PID_1100#My_Special_Device#{a5dcbf10-6530-11d2-901f-00c04fb951ed}";
 	const char* thing2 = "//?/USB#VID_2E8A&PID_1100#My_Special_Device#{b321087d-3c7f-4ec2-bcc9-fa164a1e63f9}";
 	const char* thing3 = "//?/USB#VID_2E8A&PID_1100#My_Special_Device#{dee824ef-729b-4a0e-9c14-b7117d33a817}";
-	void* fileHandle = CreateFileA(thing3, GENERIC_READ | GENERIC_WRITE, 0, 0, OPEN_EXISTING, FILE_FLAG_OVERLAPPED, 0);
+	void* fileHandle = CreateFileA(thing1, GENERIC_READ | GENERIC_WRITE, 0, 0, OPEN_EXISTING, FILE_FLAG_OVERLAPPED, 0);
 	printLastError("CreateFileA");
 
 	void* interfaceHandle;
@@ -71,22 +72,42 @@ int main()
 			printf("empty read");
 		}
 		else {
-			printf("value: %x", *(ULONG*)buffer);
+			printf("value: %x\n", *(ULONG*)buffer);
 		}
 	}
 
 	WinUsb_Free(interfaceHandle);
 	std::cout << "Hello World!\n";
 
+	return 0;
 }
 
-// Run program: Ctrl + F5 or Debug > Start Without Debugging menu
-// Debug program: F5 or Debug > Start Debugging menu
+int printUsbDevices() {
+	// Class GUID for a Monitor is: {4d36e96e-e325-11ce-bfc1-08002be10318}
+	GUID testGuid = { 0x4d36e96e, 0xe325, 0x11c3, { 0xbf, 0xc1, 0x08, 0x00, 0x2b, 0xe1, 0x03, 0x18 } };
 
-// Tips for Getting Started: 
-//   1. Use the Solution Explorer window to add/manage files
-//   2. Use the Team Explorer window to connect to source control
-//   3. Use the Output window to see build output and other messages
-//   4. Use the Error List window to view errors
-//   5. Go to Project > Add New Item to create new code files, or Project > Add Existing Item to add existing code files to the project
-//   6. In the future, to open this project again, go to File > Open > Project and select the .sln file
+	GUID x;
+	CLSIDFromString(L"{A5DCBF10-6530-11D2-901F-00C04FB951ED}", &x);
+
+	ULONG length = 0;
+	CM_Get_Device_Interface_List_SizeW(&length, &x, NULL, CM_GET_DEVICE_INTERFACE_LIST_ALL_DEVICES);
+
+	PWSTR interfaceList = (WCHAR*)HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, length * sizeof(WCHAR));
+
+	CM_Get_Device_Interface_List(&x, NULL, interfaceList, length, CM_GET_DEVICE_INTERFACE_LIST_ALL_DEVICES);
+	for (int i = 0; i < length; i++) {
+		if (interfaceList[i] == L'}') {
+			std::cout << "\n";
+		}
+		else {
+			std::wcout << interfaceList[i];
+		}
+	}
+	std::cout << "anth";
+	printf("done");
+	return 0;
+}
+
+int main() {
+	readUsb();
+}
